@@ -184,12 +184,12 @@ void Key_Callback(GLFWwindow* window,
     //float cameraSpeed = 0.05f;
 
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-        if (carSpeed < 1) {
+        if (carSpeed < 1) 
+        {
             carSpeed += 0.007;
         }
 
 		std::cout << "Speed: " << carSpeed << std::endl;
-        
         main_object.translate(perca.getFront() * carSpeed);
 		//perca.updateCameraPosition(main_object.getPosition());
 		/*std::cout << "x: " << main_object.getPosition().x << std::endl;
@@ -197,11 +197,20 @@ void Key_Callback(GLFWwindow* window,
 		std::cout << "z: " << main_object.getPosition().z << std::endl;*/
 		//main_object.rotate('y', 0);
     }
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-        main_object.translate(-perca.getFront() * cameraSpeed);
+
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) //Will fix this later
+    {
+        if (carSpeed > -1)               //Rafael Ira R. Villanueva
+        {
+            carSpeed -= 0.007;           //Rafael Ira R. Villanueva
+        }                                //Rafael Ira R. Villanueva
+        std::cout << "Speed: " << carSpeed << std::endl; //Rafael Ira R. Villanueva
+        main_object.translate(perca.getFront() * carSpeed); //-perca original Rafael Ira R. Villanueva
         //perca.updateCameraPosition(main_object.getPosition());
     }
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) 
+    {
         main_object.translate(-glm::normalize(glm::cross(perca.getFront(), perca.getWorldUp())) * cameraSpeed);
     }
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
@@ -381,12 +390,12 @@ int main(void)
     
 
     std::string facesSkybox[]{
-       "Skybox/rainbow_rt.png",
-       "Skybox/rainbow_lf.png",
-       "Skybox/rainbow_up.png",
-       "Skybox/rainbow_dn.png",
-       "Skybox/rainbow_ft.png",
-       "Skybox/rainbow_bk.png"
+       "Skybox/morning_rt.png",
+       "Skybox/morning_lf.png",
+       "Skybox/morning_up.png",
+       "Skybox/morning_dn.png",
+       "Skybox/morning_ft.png",
+       "Skybox/morning_bk.png"
     };
 
     unsigned int skyboxTex;
@@ -418,11 +427,11 @@ int main(void)
             glTexImage2D(
                 GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
                 0,
-                GL_RGB,
+                GL_RGBA, //Rafael Ira R. Villanueva Orig RGB
                 w,
                 h,
                 0,
-                GL_RGB,
+                GL_RGBA, //Rafael Ira R. Villanueva Orig RGB
                 GL_UNSIGNED_BYTE,
                 data
             );
@@ -605,7 +614,8 @@ int main(void)
    
     //array of Mesh for the main object
     std::vector<GLfloat> fullVertexData;
-    for (int i = 0; i < shapes[0].mesh.indices.size(); i++) {
+    for (int i = 0; i < shapes[0].mesh.indices.size(); i++) 
+    {
         tinyobj::index_t vData = shapes[0].mesh.indices[i];
 
         // Validate vertex index
@@ -1220,15 +1230,12 @@ int main(void)
     ColorLight colorLight;
 
     
-	
+    glEnable(GL_BLEND); //Rafael Ira R. Villanueva
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); //Rafael Ira R. Villanueva
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
     {
-
-        
-        
-
         /* Render here */
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         

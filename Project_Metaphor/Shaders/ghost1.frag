@@ -35,6 +35,13 @@ vec3 CalcPointLight(vec3 normal, vec3 viewDir);
 
 void main()
 {
+	vec4 pixelColor = texture(tex0, texCoord); //Rafael Ira R. Villanueva
+	
+	if (pixelColor.a < 0.1)  //Rafael Ira R. Villanueva
+	{						 //Rafael Ira R. Villanueva
+		discard;             //Rafael Ira R. Villanueva
+	}                        //Rafael Ira R. Villanueva
+
 	vec3 result;
 
 	vec3 norm = normalize(normCoord);
@@ -52,7 +59,8 @@ void main()
 }
 
 
-vec3 CalcDirLight(vec3 normal, vec3 viewDir){
+vec3 CalcDirLight(vec3 normal, vec3 viewDir)
+{
 
 	vec3 lightDir = normalize(-direction);
 
@@ -69,7 +77,8 @@ vec3 CalcDirLight(vec3 normal, vec3 viewDir){
 	return (ambient + diffuse + specular) * dl_brightness;
 }
 
-vec3 CalcPointLight(vec3 normal, vec3 viewDir){
+vec3 CalcPointLight(vec3 normal, vec3 viewDir)
+{
 
 	vec3 lightDir = normalize(lightPos - fragPos);
 
