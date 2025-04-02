@@ -183,10 +183,16 @@ void Key_Callback(GLFWwindow* window,
 
     //float cameraSpeed = 0.05f;
 
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-        if (carSpeed < 1) 
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) 
+    {
+        if (carSpeed < 0)
         {
-            carSpeed += 0.007;
+            carSpeed = 0.005;
+        }
+
+        else if (carSpeed < 1) 
+        {
+            carSpeed += 0.005;
         }
 
 		std::cout << "Speed: " << carSpeed << std::endl;
@@ -200,12 +206,20 @@ void Key_Callback(GLFWwindow* window,
 
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) //Will fix this later
     {
-        if (carSpeed > -1)               //Rafael Ira R. Villanueva
+        if (carSpeed > 0)               //Rafael Ira R. Villanueva
         {
-            carSpeed -= 0.007;           //Rafael Ira R. Villanueva
+            carSpeed = -0.005;           //Rafael Ira R. Villanueva
         }                                //Rafael Ira R. Villanueva
+
+        else if (carSpeed > -1) 
+        {
+            carSpeed -= 0.005;
+        }
+
         std::cout << "Speed: " << carSpeed << std::endl; //Rafael Ira R. Villanueva
         main_object.translate(perca.getFront() * carSpeed); //-perca original Rafael Ira R. Villanueva
+
+		//main_object.translate(main_object.getPosition() * -carSpeed);
         //perca.updateCameraPosition(main_object.getPosition());
     }
 
