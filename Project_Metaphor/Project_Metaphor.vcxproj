@@ -183,10 +183,14 @@
   <ItemGroup>
     <None Include="Shaders\ghost1.frag" />
     <None Include="Shaders\ghost1.vert" />
+    <None Include="Shaders\ghost2.frag" />
+    <None Include="Shaders\ghost2.vert" />
     <None Include="Shaders\lm1.frag" />
     <None Include="Shaders\lm1.vert" />
     <None Include="Shaders\lm2.frag" />
     <None Include="Shaders\lm2.vert" />
+    <None Include="Shaders\plane.frag" />
+    <None Include="Shaders\plane.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

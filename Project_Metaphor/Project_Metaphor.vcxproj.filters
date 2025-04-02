@@ -95,5 +95,9 @@
     <None Include="Shaders\lm2.vert" />
     <None Include="Shaders\ghost1.vert" />
     <None Include="Shaders\ghost1.frag" />
+    <None Include="Shaders\plane.vert" />
+    <None Include="Shaders\plane.frag" />
+    <None Include="Shaders\ghost2.vert" />
+    <None Include="Shaders\ghost2.frag" />
   </ItemGroup>
 </Project>

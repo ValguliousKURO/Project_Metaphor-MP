@@ -69,8 +69,10 @@ Model3D road({ 0,0,0 });
 Model3D landmark_1({ 0,0,0 });
 Model3D landmark_2({ 0,0,0 });
 Model3D ghost_car1({ 0,0,0 });
+Model3D ghost_car2({ 0,0,0 });
+Model3D plane_road({ 0,0,0 });
 //Model3D light_ball({ 0,1,0 });
-OrthoCamera orca({ 0,2,0 });
+OrthoCamera orca({ 0,2,0 });    
 PerspectiveCamera perca({ 0,0,0 }, height, width);
 
 
@@ -260,11 +262,20 @@ int main(void)
 	landmark_2.setRotation(0, 0 , 0);
 	//landmark_1.setRotation(0, 180, 0);
 	landmark_1.setScale(glm::vec3{ 0.5,0.5,0.5 });
-	landmark_1.setPosition(glm::vec3{ -3, 0,10 });
+	landmark_1.setPosition(glm::vec3{ -3, 1.8,10 });
     landmark_2.setPosition(glm::vec3{ 3, 0,10 });
     main_object.setScale(glm::vec3{ 0.005f,0.005f,0.005f });
+    
+    
     ghost_car1.setPosition(glm::vec3{ 2,0,0 });
     ghost_car1.setScale(glm::vec3{ 0.35f,0.35f,0.35f });
+	
+    ghost_car2.setPosition(glm::vec3{ -2,0,0 });
+	ghost_car2.setScale(glm::vec3{ 0.35f,0.35f,0.35f });
+
+	plane_road.setPosition(glm::vec3{ 0,0,20 });
+	plane_road.setScale(glm::vec3{ 2.5f,2.5f,45.5f });
+	plane_road.setRotation(270, 0, 0);
 
     /* Initialize the library */
     if (!glfwInit())
@@ -401,6 +412,69 @@ int main(void)
         ghost1_tex_bytes);
     glGenerateMipmap(GL_TEXTURE_2D);
     stbi_image_free(ghost1_tex_bytes);
+
+
+
+    int plane_img_width, plane_img_height, plane_colorChannels; 
+    stbi_set_flip_vertically_on_load(true); 
+    unsigned char* plane_tex_bytes = stbi_load( 
+        "3D/grey.jpg", // Path to your texture image
+        &plane_img_width, 
+        &plane_img_height,  
+        &plane_colorChannels, 
+        0 
+    );
+
+    GLuint plane_texture; 
+    glGenTextures(1, &plane_texture); 
+    glActiveTexture(GL_TEXTURE4);  // Use a different texture unit if needed
+    glBindTexture(GL_TEXTURE_2D, plane_texture); 
+
+    glTexImage2D(GL_TEXTURE_2D, 
+        0,
+        GL_RGB,
+        plane_img_width, 
+        plane_img_height, 
+        0,
+        GL_RGB, 
+        GL_UNSIGNED_BYTE, 
+        plane_tex_bytes); 
+    glGenerateMipmap(GL_TEXTURE_2D); 
+    stbi_image_free(plane_tex_bytes); 
+
+
+
+    int ghost2_img_width, ghost2_img_height, ghost2_colorChannels;
+    stbi_set_flip_vertically_on_load(true);
+    unsigned char* ghost2_tex_bytes = stbi_load(
+        "3D/car4_lightorange.png", // Path to your texture image
+        &ghost2_img_width,
+        &ghost2_img_height,
+        &ghost2_colorChannels,
+        0
+    );
+
+    GLuint ghost2_texture;
+    glGenTextures(1, &ghost2_texture);
+    glActiveTexture(GL_TEXTURE5); // Use a different texture unit if needed
+    glBindTexture(GL_TEXTURE_2D, ghost2_texture);
+
+    glTexImage2D(GL_TEXTURE_2D,
+        0,
+        GL_RGBA,
+        ghost2_img_width,
+        ghost2_img_height,
+        0,
+        GL_RGBA,
+        GL_UNSIGNED_BYTE,
+        ghost2_tex_bytes);
+    glGenerateMipmap(GL_TEXTURE_2D);
+    stbi_image_free(ghost2_tex_bytes);
+
+
+
+
+
     
 
     std::string facesSkybox[]{
@@ -467,6 +541,8 @@ int main(void)
     Shader lm1Shader("Shaders/lm1.vert", "Shaders/lm1.frag");
     Shader lm2Shader("Shaders/lm2.vert", "Shaders/lm2.frag");
 	Shader ghost1Shader("Shaders/ghost1.vert", "Shaders/ghost1.frag");
+	Shader ghost2Shader("Shaders/ghost2.vert", "Shaders/ghost2.frag");
+	Shader planeShader("Shaders/plane.vert", "Shaders/plane.frag");
     //Shader sphereShader("Shaders/sphere.vert", "Shaders/sphere.frag");
 
     //compile shader vertex
@@ -875,6 +951,157 @@ int main(void)
 
 
 
+
+
+    std::string plane_path = "3D/plane.obj";
+    std::vector<tinyobj::shape_t> plane_shapes;
+    std::vector<tinyobj::material_t> plane_material;
+
+    tinyobj::attrib_t plane_attributes;
+
+    bool plane_success = tinyobj::LoadObj(
+        &plane_attributes,
+        &plane_shapes,
+        &plane_material,
+        &warning,
+        &error,
+        plane_path.c_str()
+    );
+
+    //array of mesh for the light ball
+    std::vector<GLfloat> plane_fullVertexData;
+    for (int i = 0; i < plane_shapes[0].mesh.indices.size(); i++) {
+        tinyobj::index_t gvData = plane_shapes[0].mesh.indices[i];
+
+        //vertex
+        plane_fullVertexData.push_back(
+            plane_attributes.vertices[(gvData.vertex_index * 3)]
+        );
+
+        plane_fullVertexData.push_back(
+            plane_attributes.vertices[(gvData.vertex_index * 3) + 1]
+        );
+
+        plane_fullVertexData.push_back(
+            plane_attributes.vertices[(gvData.vertex_index * 3) + 2]
+        );
+
+        //normal
+        plane_fullVertexData.push_back(
+            plane_attributes.normals[(gvData.normal_index * 3)]
+        );
+
+        plane_fullVertexData.push_back(
+            plane_attributes.normals[(gvData.normal_index * 3) + 1]
+        );
+
+        plane_fullVertexData.push_back(
+            plane_attributes.normals[(gvData.normal_index * 3) + 2]
+        );
+
+        //texcoord
+        plane_fullVertexData.push_back(
+            plane_attributes.texcoords[(gvData.texcoord_index * 2)]
+        );
+
+        plane_fullVertexData.push_back(
+            plane_attributes.texcoords[(gvData.texcoord_index * 2) + 1]
+        );
+
+    }
+
+
+
+    std::string ghost2_path = "3D/Car4.obj";
+    std::vector<tinyobj::shape_t> ghost2_shapes;
+    std::vector<tinyobj::material_t> ghost2_material;
+
+    tinyobj::attrib_t ghost2_attributes;
+
+    bool ghost2_success = tinyobj::LoadObj(
+        &ghost2_attributes,
+        &ghost2_shapes,
+        &ghost2_material,
+        &warning,
+        &error,
+        ghost2_path.c_str()
+    );
+
+    //array of mesh for the light ball
+    std::vector<GLfloat> ghost2_fullVertexData;
+    for (int i = 0; i < ghost2_shapes[0].mesh.indices.size(); i++) {
+        tinyobj::index_t gvData = ghost2_shapes[0].mesh.indices[i];
+
+        //vertex
+        ghost2_fullVertexData.push_back(
+            ghost2_attributes.vertices[(gvData.vertex_index * 3)]
+        );
+
+        ghost2_fullVertexData.push_back(
+            ghost2_attributes.vertices[(gvData.vertex_index * 3) + 1]
+        );
+
+        ghost2_fullVertexData.push_back(
+            ghost2_attributes.vertices[(gvData.vertex_index * 3) + 2]
+        );
+
+        //normal
+        ghost2_fullVertexData.push_back(
+            ghost2_attributes.normals[(gvData.normal_index * 3)]
+        );
+
+        ghost2_fullVertexData.push_back(
+            ghost2_attributes.normals[(gvData.normal_index * 3) + 1]
+        );
+
+        ghost2_fullVertexData.push_back(
+            ghost2_attributes.normals[(gvData.normal_index * 3) + 2]
+        );
+
+        //texcoord
+        ghost2_fullVertexData.push_back(
+            ghost2_attributes.texcoords[(gvData.texcoord_index * 2)]
+        );
+
+        ghost2_fullVertexData.push_back(
+            ghost2_attributes.texcoords[(gvData.texcoord_index * 2) + 1]
+        );
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     //SKYBOX
     //Vertices for the cube
     float skyboxVertices[]{
@@ -1097,17 +1324,6 @@ int main(void)
 
 
 
-
-
-
-
-
-
-
-
-
-
-
     GLuint ghost1_VAO, ghost1_VBO;
 
     glGenVertexArrays(1, &ghost1_VAO);
@@ -1160,6 +1376,127 @@ int main(void)
 
         8 * sizeof(float),
         (void*)ghost1_uvPtr
+
+    );
+
+    glEnableVertexAttribArray(2);
+
+
+
+
+    GLuint plane_VAO, plane_VBO;
+
+    glGenVertexArrays(1, &plane_VAO);
+    glGenBuffers(1, &plane_VBO);
+
+    glBindVertexArray(plane_VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, plane_VBO);
+
+    glBufferData(
+        GL_ARRAY_BUFFER,
+        sizeof(GLfloat)* plane_fullVertexData.size(),
+        plane_fullVertexData.data(),
+        GL_DYNAMIC_DRAW
+    );
+
+
+    glVertexAttribPointer(
+        0,
+        3,
+        GL_FLOAT,
+        GL_FALSE,
+
+        8 * sizeof(float),
+        (void*)0
+
+    );
+
+    glEnableVertexAttribArray(0);
+
+    GLintptr plane_litPtr = 3 * sizeof(float);
+    glVertexAttribPointer(
+        1,
+        3,
+        GL_FLOAT,
+        GL_FALSE,
+
+        8 * sizeof(float),
+        (void*)plane_litPtr
+
+    );
+
+    glEnableVertexAttribArray(1);
+
+    GLintptr plane_uvPtr = 6 * sizeof(float);
+    glVertexAttribPointer(
+        2,
+        2,
+        GL_FLOAT,
+        GL_FALSE,
+
+        8 * sizeof(float),
+        (void*)plane_uvPtr
+
+    );
+
+    glEnableVertexAttribArray(2);
+
+
+
+
+
+    GLuint ghost2_VAO, ghost2_VBO;
+
+    glGenVertexArrays(1, &ghost2_VAO);
+    glGenBuffers(1, &ghost2_VBO);
+
+    glBindVertexArray(ghost2_VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, ghost2_VBO);
+
+    glBufferData(
+        GL_ARRAY_BUFFER,
+        sizeof(GLfloat)* ghost2_fullVertexData.size(),
+        ghost2_fullVertexData.data(),
+        GL_DYNAMIC_DRAW
+    );
+
+
+    glVertexAttribPointer(
+        0,
+        3,
+        GL_FLOAT,
+        GL_FALSE,
+
+        8 * sizeof(float),
+        (void*)0
+
+    );
+
+    glEnableVertexAttribArray(0);
+
+    GLintptr ghost2_litPtr = 3 * sizeof(float);
+    glVertexAttribPointer(
+        1,
+        3,
+        GL_FLOAT,
+        GL_FALSE,
+
+        8 * sizeof(float),
+        (void*)ghost2_litPtr
+
+    );
+
+    glEnableVertexAttribArray(1);
+
+    GLintptr ghost2_uvPtr = 6 * sizeof(float);
+    glVertexAttribPointer(
+        2,
+        2,
+        GL_FLOAT,
+        GL_FALSE,
+
+        8 * sizeof(float),
+        (void*)ghost2_uvPtr
 
     );
 
@@ -1434,6 +1771,77 @@ int main(void)
          //colorLight.setColor(sphere_color); //change the color
          //colorLight.perform(&sphereShader); //attaches the values of light into the shader program of sphere
         ghost_car1.mainDraw(&ghost1Shader, &ghost1_VAO, &ghost1_fullVertexData);
+
+		
+        
+        
+        
+        
+        planeShader.use();
+		plane_road.setTexture(&planeShader, &plane_texture, "texture4");
+		// Bind the texture
+		glActiveTexture(GL_TEXTURE4);
+		glBindTexture(GL_TEXTURE_2D, plane_texture);
+		planeShader.setInt("tex0", 4); // Set the texture unit to 1
+        if (stateCam) {
+            //set the camera to ortho
+            plane_road.setCamera(orca.getProjection(), orca.getCameraPos(), orca.getFront(), orca.getViewMat());
+        }
+        else {
+            //set the camera to perspective
+            plane_road.setCamera(perca.getProjection(), perca.getCameraPos(), perca.getFront(), perca.getViewMat());
+        }
+
+        //pointLight.setPosition(glm::vec3{ 0,1,0 }/*light_ball.getPosition(true)*/); //set the current position of the light sphere to the lightPos
+       // pointLight.setBrightness(brightness);
+        directionLight.setBrightness(dl_brightness);
+
+        //attaches the same values for direction and point light
+        directionLight.attachFundamentals(&planeShader);
+        // pointLight.attachFundamentals(&lm2Shader);
+
+         //attaches the specific values of each light
+        directionLight.attachSpecifics(&planeShader);
+        // pointLight.attachSpecifics(&lm2Shader);
+
+         //colorLight.setColor(sphere_color); //change the color
+         //colorLight.perform(&sphereShader); //attaches the values of light into the shader program of sphere
+        plane_road.mainDraw(&planeShader, &plane_VAO, &plane_fullVertexData);
+           
+
+
+        ghost2Shader.use();
+        ghost_car2.setTexture(&ghost2Shader, &ghost2_texture, "texture5");
+        // Bind the texture
+        glActiveTexture(GL_TEXTURE5);
+        glBindTexture(GL_TEXTURE_2D, ghost2_texture);
+        ghost2Shader.setInt("tex0", 5); // Set the texture unit to 1
+        //if (stateCam) {
+        //    //set the camera to ortho
+        //    ghost_car1.setCamera(orca.getProjection(), orca.getCameraPos(), orca.getFront(), orca.getViewMat());
+        //}
+        //else {
+            //set the camera to perspective
+        ghost_car2.setCamera(perca.getProjection(), perca.getCameraPos(), perca.getFront(), perca.getViewMat());
+        //}
+
+        //pointLight.setPosition(glm::vec3{ 0,1,0 }/*light_ball.getPosition(true)*/); //set the current position of the light sphere to the lightPos
+       // pointLight.setBrightness(brightness);
+        directionLight.setBrightness(dl_brightness);
+
+        //attaches the same values for direction and point light
+        directionLight.attachFundamentals(&ghost2Shader);
+        // pointLight.attachFundamentals(&lm2Shader);
+
+         //attaches the specific values of each light
+        directionLight.attachSpecifics(&ghost2Shader);
+        // pointLight.attachSpecifics(&lm2Shader);
+
+         //colorLight.setColor(sphere_color); //change the color
+         //colorLight.perform(&sphereShader); //attaches the values of light into the shader program of sphere
+        ghost_car2.mainDraw(&ghost2Shader, &ghost2_VAO, &ghost2_fullVertexData);
+
+
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
