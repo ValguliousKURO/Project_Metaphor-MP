@@ -8,7 +8,7 @@ Light(lightPos,lightColor, ambientStr, specStr, specPhong)
 
 void PointLight::perform(GLuint* shaderProg)
 {
-    GLuint  lightLoc = glGetUniformLocation(*shaderProg, "lightPos");
+    GLuint lightLoc = glGetUniformLocation(*shaderProg, "lightPos");
         glUniform3fv(lightLoc,
             1,
             glm::value_ptr(lightPos));
@@ -53,3 +53,4 @@ void PointLight::setBrightness(float brightness)
 {
     this->brightness = brightness;
 }
+

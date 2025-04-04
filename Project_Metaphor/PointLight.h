@@ -31,4 +31,5 @@ public:
 public:
 	void setPosition(glm::vec3 position);
 	void setBrightness(float brightness);
+	
 };

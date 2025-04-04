@@ -14,8 +14,8 @@
 #include "Camera.h"
 #include "OrthoCamera.h"
 #include "PerspectiveCamera.h"
-
-
+#include "Stopwatch.h"
+#include "Player.h"
 #include <iostream>
 #include <string>
 #include <cmath>
@@ -28,15 +28,23 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
 
+#define FINISH_LINE 231
 
 //general movement
 // 
+
+bool skyState = false;
+bool stateGhost = false;
+
 
 float x = 0.f, y = 0.f, z = -20.0f;
 //false = main, true = sphere
 bool stateControl = false;
 bool stateCam = false;
-
+bool finishState = false;
+bool finishState2 = false;
+bool finishState3 = false;
+bool stateSkybox = false; //false = morning, true = night Rafael Ira R. Villanueva
 
 float x_scale = 0.5f, y_scale = 0.5f, z_scale = 0.5f;
 
@@ -64,7 +72,7 @@ float height = 800.0f;
 float width = 800.0f;
 
 //Initializing the object classes to be rendered
-Model3D main_object({ 0,0,0 });
+Player player_car({ 0,0,0 });
 Model3D road({ 0,0,0 });
 Model3D landmark_1({ 0,0,0 });
 Model3D landmark_2({ 0,0,0 });
@@ -74,62 +82,94 @@ Model3D plane_road({ 0,0,0 });
 //Model3D light_ball({ 0,1,0 });
 OrthoCamera orca({ 0,2,0 });    
 PerspectiveCamera perca({ 0,0,0 }, height, width);
+Stopwatch stopwatch;
+Stopwatch stopwatch2;
+Stopwatch stopwatch3;
 
 
 //Point light variables
 float brightness = 0.0f;
-float dl_brightness = 1.0f;
+float dl_brightness = 2.0f;
 
 glm::vec3 sphere_color = { 1.f,1.f,1.f };
 float carSpeed = 0.0f;
+float ghostSpeed1 = 0.0f;
+float ghostSpeed2 = 0.0f;
 
-//void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
-//{   
-//    float xpos = static_cast<float>(xposIn);
-//    float ypos = static_cast<float>(yposIn);
-//    if (firstMouse) // for first mouse move
-//    {
-//        lastX = xpos;
-//        lastY = ypos;
-//        firstMouse = false;
-//    }
-//    // calculate offsets to add influence front
-//    float xoffset = xpos - lastX;
-//    float yoffset = lastY - ypos; //reversed
-//    lastX = xpos;
-//    lastY = ypos;
-//
-//    //set how STRONG the movement is
-//    const float sensitivity = 0.1f;
-//    xoffset *= sensitivity;
-//    yoffset *= sensitivity;
-//
-//    //for front calculation
-//    yaw += xoffset;
-//    pitch += yoffset;
-//
-//    //making sure that you can't 360 via neck breaking
-//    if (pitch > 89.0f)
-//        pitch = 89.0f;
-//    if (pitch < -89.0f)
-//        pitch = -89.0f;
-//
-//    //setting front and the change
-//    if (stateCam == false) {
-//        glm::vec3 direction;
-//        direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch)) * 2;
-//        direction.y = sin(glm::radians(pitch)) * 2;
-//        direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch)) * 2;
-//        perca.setCameraPos(direction);
-//        //std::cout << "Mouse" << direction.x << "" << direction.y << "" << direction.z << std::endl;
-//        perca.updateCameraPosition(main_object.getPosition());
-//        perca.setFront(glm::vec3(-perca.getCameraPos().x, -perca.getCameraPos().y, -perca.getCameraPos().z));
-//    }
-//    
-//    
-//}
+std::string facesSkyboxMorning[]{
+   "Skybox/morning_rt.png",
+   "Skybox/morning_lf.png",
+   "Skybox/morning_up.png", 
+   "Skybox/morning_dn.png",
+   "Skybox/morning_ft.png",
+   "Skybox/morning_bk.png"
+};
 
-//perca.updateCameraPosition(main_object.getPosition());
+std::string facesSkyboxNight[]{
+   "Skybox/night_rt.png",
+   "Skybox/night_lf.png",
+   "Skybox/night_up.png", 
+   "Skybox/night_dn.png",
+   "Skybox/night_ft.png",
+   "Skybox/night_bk.png"
+};
+
+void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
+{   
+    float xpos = static_cast<float>(xposIn);
+    float ypos = static_cast<float>(yposIn);
+    if (firstMouse) // for first mouse move
+    {
+        lastX = xpos;
+        lastY = ypos;
+        firstMouse = false;
+    }
+    // calculate offsets to add influence front
+    float xoffset = xpos - lastX;
+    float yoffset = ypos -lastY; //reversed
+    lastX = xpos;
+    lastY = ypos;
+
+    //set how STRONG the movement is
+    const float sensitivity = 0.1f;
+    xoffset *= sensitivity;
+    yoffset *= sensitivity;
+
+    //for front calculation
+    yaw += xoffset;
+    pitch += yoffset;
+
+    //making sure that you can't 360 via neck breaking
+    /*if (pitch > 89.0f)
+        pitch = 89.0f;
+    if (pitch < -89.0f)
+        pitch = -89.0f;*/
+
+    //setting front and the change
+   // if (stateCam == false) {
+        glm::vec3 direction;
+        direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch)) * 2;
+        direction.y = sin(glm::radians(pitch)) * 2;
+        direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch)) * 2;
+        perca.setCameraPos(direction);
+        //std::cout << "Mouse" << direction.x << "" << direction.y << "" << direction.z << std::endl;
+        //perca.updateCameraPosition(player_car.getPosition());
+        perca.setFront(glm::vec3(-perca.getCameraPos().x, -perca.getCameraPos().y, -perca.getCameraPos().z));
+
+
+        int windowWidth, windowHeight;
+        glfwGetWindowSize(window, &windowWidth, &windowHeight);
+        glfwSetCursorPos(window, windowWidth / 2, windowHeight / 2);
+        lastX = windowWidth / 2;
+        lastY = windowHeight / 2;
+    //}
+    /*else if (stateCam == true){
+       
+
+    }*/
+}
+
+//perca.updateCameraPosition(player_car.getPosition());
 
 
 
@@ -139,72 +179,39 @@ void Key_Callback(GLFWwindow* window,
     int action,
     int mods) {
 
-    float cameraSpeed = 0.9f;
+    float turnSpeed = 0.3f;
 	
-    //ROTATES WHATEVER IS TOGGLED
-    //if (glfwGetKey(window, GLFW_KEY_D)) {
-    //    if (stateControl) {
-    //        light_ball.rotate('y', 0);
-    //    }
-    //    else {
-    //        main_object.rotate('y', 0);
-    //    }
-    //    
-    //}
-    //if (glfwGetKey(window, GLFW_KEY_A)) {
-    //    
-    //    if (stateControl) {
-    //        light_ball.rotate('y', 1);
-    //    }
-    //    else {
-    //        main_object.rotate('y', 1);
-    //    }
-
-    //}
-
-    ////xRot
-    //if (glfwGetKey(window, GLFW_KEY_S)) {
-    //    if (stateControl) {
-    //        light_ball.rotate('x', 0);
-    //    }
-    //    else {
-    //        main_object.rotate('x', 0);
-    //    }
-    //    
-    //}
-    //if (glfwGetKey(window, GLFW_KEY_W)) {
-    //    if (stateControl) {
-    //        light_ball.rotate('x', 1);
-    //    }
-    //    else {
-    //        main_object.rotate('x', 1);
-    //    }
-    //    
-    //}
 
 
-    //float cameraSpeed = 0.05f;
 
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) 
+    //float turnSpeed = 0.05f;
+
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
     {
-        if (carSpeed < 0)
-        {
-            carSpeed = 0.005;
-        }
+        if (finishState == false) {
+            if (carSpeed < 0)
+            {
+                carSpeed = 0.005;
 
-        else if (carSpeed < 1) 
-        {
-            carSpeed += 0.005;
-        }
+            }
 
-		std::cout << "Speed: " << carSpeed << std::endl;
-        main_object.translate(perca.getFront() * carSpeed);
-		//perca.updateCameraPosition(main_object.getPosition());
-		/*std::cout << "x: " << main_object.getPosition().x << std::endl;
-		std::cout << "y: " << main_object.getPosition().y << std::endl;
-		std::cout << "z: " << main_object.getPosition().z << std::endl;*/
-		//main_object.rotate('y', 0);
+            else if (carSpeed < 1)
+            {
+                carSpeed += 0.005;
+            }
+            std::cout << "Speed: " << carSpeed << std::endl;
+            player_car.translate(glm::vec3{ 0,0,1 } *carSpeed);
+		}
+		else if (finishState == true) {
+			carSpeed = 0;
+			std::cout << "Speed: " << carSpeed << std::endl;
+			player_car.translate(glm::vec3{ 0,0,0 } *carSpeed);
+		}
+
     }
+
+
+
 
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) //Will fix this later
     {
@@ -219,53 +226,134 @@ void Key_Callback(GLFWwindow* window,
         }
 
         std::cout << "Speed: " << carSpeed << std::endl; //Rafael Ira R. Villanueva
-        main_object.translate(perca.getFront() * carSpeed); //-perca original Rafael Ira R. Villanueva
+        player_car.translate(glm::vec3{ 0,0,1 } * carSpeed); //-perca original Rafael Ira R. Villanueva
 
-		//main_object.translate(main_object.getPosition() * -carSpeed);
-        //perca.updateCameraPosition(main_object.getPosition());
+		//player_car.translate(player_car.getPosition() * -carSpeed);
+        //perca.updateCameraPosition(player_car.getPosition());
     }
 
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) 
     {
-        main_object.translate(-glm::normalize(glm::cross(perca.getFront(), perca.getWorldUp())) * cameraSpeed);
+        player_car.translate(glm::vec3{ 1,0,0 } * turnSpeed);
     }
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-        main_object.translate(glm::normalize(glm::cross(perca.getFront(), perca.getWorldUp())) * cameraSpeed);
+        player_car.translate(-glm::vec3{ 1,0,0 } * turnSpeed);
     }
-    if (glfwGetKey(window, GLFW_KEY_SPACE)) {
-        //if (stateControl == false) { //set it to be able to control the light sphere
-        //    sphere_color = glm::vec3{ 1.f,0.f,0.f };
-        //    stateControl = true;
-        //}
-        if (stateControl == true) { //set it to be able to control the main object
-            sphere_color = glm::vec3{ 1.f,1.f,1.f };
-            stateControl = false;
+    if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) {
+        
+        if (stateGhost == true) {
+            std::cout << "Ghost Stop" << std::endl;
+            stateGhost = false;
+            
+		}
+		else if (stateGhost == false) {
+            std::cout << "Ghost Start" << std::endl;
+            stateGhost = true;
+            
+		}
+		
+       
+    }
+
+
+
+
+    if (key == GLFW_KEY_Z && action == GLFW_PRESS) {
+        
+        if (stateCam == true) {
+            stateCam = false;
+            perca.setFront(glm::vec3(-perca.getCameraPos().x, -perca.getCameraPos().y, -perca.getCameraPos().z));
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL); 
+            glfwSetCursorPosCallback(window, nullptr) ;
+			
+        }
+		else if(stateCam == false){
+			stateCam = true;
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+            glfwSetCursorPosCallback(window, mouse_callback);
+
+		}
+    }
+
+
+    if (key == GLFW_KEY_Q && action == GLFW_PRESS)
+    {
+		dl_brightness = 2.0f;
+		brightness = 0.0f;
+        stateSkybox = false;
+        std::cout << "Morning" << std::endl;
+
+        for (unsigned int i = 0; i < 6; i++)
+        {
+            int w, h, skyCChannel;
+
+            stbi_set_flip_vertically_on_load(false);
+            unsigned char* data = stbi_load(facesSkyboxMorning[i].c_str(), &w, &h, &skyCChannel, 0);
+
+            if (data) {
+                glTexImage2D(
+                    GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+                    0,
+                    GL_RGBA, //Rafael Ira R. Villanueva Orig RGB
+                    w,
+                    h,
+                    0,
+                    GL_RGBA, //Rafael Ira R. Villanueva Orig RGB
+                    GL_UNSIGNED_BYTE,
+                    data
+                );
+
+                stbi_image_free(data);
+            }
         }
     }
 
-    if (glfwGetKey(window, GLFW_KEY_1)) {
-        stateCam = false; //changes the camera into perspective mode
+    if (key == GLFW_KEY_E && action == GLFW_PRESS)
+    {
+        dl_brightness = 0.5f;
+		brightness = 1.0f;
+        stateSkybox = true;
+        std::cout << "Night" << std::endl;
+
+        for (unsigned int i = 0; i < 6; i++)
+        {
+            int w, h, skyCChannel;
+
+            stbi_set_flip_vertically_on_load(false);
+            unsigned char* data = stbi_load(facesSkyboxNight[i].c_str(), &w, &h, &skyCChannel, 0);
+
+            if (data) {
+                glTexImage2D(
+                    GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+                    0,
+                    GL_RGBA, //Rafael Ira R. Villanueva Orig RGB
+                    w,
+                    h,
+                    0,
+                    GL_RGBA, //Rafael Ira R. Villanueva Orig RGB
+                    GL_UNSIGNED_BYTE,
+                    data
+                );
+
+                stbi_image_free(data);
+            }
+        }
     }
-    if (glfwGetKey(window, GLFW_KEY_2)) {
-        stateCam = true; //changes the camera into ortho mode
-    }
-    if (glfwGetKey(window, GLFW_KEY_UP) && stateControl) brightness += 1.0f;
-    if (glfwGetKey(window, GLFW_KEY_DOWN) && stateControl) brightness -= 1.0f;
-    if (glfwGetKey(window, GLFW_KEY_LEFT) && stateControl) dl_brightness -= 1.0f;
-    if (glfwGetKey(window, GLFW_KEY_RIGHT) && stateControl) dl_brightness += 1.0f;
+   
+  
 };
 
 int main(void)
 {
     GLFWwindow* window;
-    main_object.setRotation(0, 90, 0);
-	landmark_2.setRotation(0, 0 , 0);
-	//landmark_1.setRotation(0, 180, 0);
-	landmark_1.setScale(glm::vec3{ 0.5,0.5,0.5 });
-	landmark_1.setPosition(glm::vec3{ -3, 1.8,10 });
-    landmark_2.setPosition(glm::vec3{ 3, 0,10 });
-    main_object.setScale(glm::vec3{ 0.005f,0.005f,0.005f });
     
+    player_car.setScale(glm::vec3{ 0.35f,0.35f,0.35f });
+	
+	landmark_1.setPosition(glm::vec3{ -3.5, 0,227.0f });
+	landmark_1.setRotation(0, 90, 0);
+    
+    landmark_2.setPosition(glm::vec3{ 3.5f, 0, 229.5f });
+    landmark_2.setRotation(0, 180, 0);
     
     ghost_car1.setPosition(glm::vec3{ 2,0,0 });
     ghost_car1.setScale(glm::vec3{ 0.35f,0.35f,0.35f });
@@ -273,16 +361,19 @@ int main(void)
     ghost_car2.setPosition(glm::vec3{ -2,0,0 });
 	ghost_car2.setScale(glm::vec3{ 0.35f,0.35f,0.35f });
 
-	plane_road.setPosition(glm::vec3{ 0,0,20 });
-	plane_road.setScale(glm::vec3{ 2.5f,2.5f,45.5f });
+	plane_road.setPosition(glm::vec3{ 0,0,110 });
+	plane_road.setScale(glm::vec3{ 5.5f,2.5f, 120.5f });
 	plane_road.setRotation(270, 0, 0);
+
+	
+	
 
     /* Initialize the library */
     if (!glfwInit())
         return -1;
 
     /* Create a windowed mode window and its OpenGL context */
-    window = glfwCreateWindow(width, height, "Amar, Dacanay, Villanueva", NULL, NULL);
+    window = glfwCreateWindow(width, height, "Dacanay & Villanueva GDGRAP MP", NULL, NULL);
     if (!window)
     {
         glfwTerminate();
@@ -300,7 +391,7 @@ int main(void)
     stbi_set_flip_vertically_on_load(true);
 
     unsigned char* tex_bytes = stbi_load(
-        "3D/pippaThePepper.png",
+        "3D/Car8_purple.png",
         &img_width,
         &img_height,
         &colorChannels,
@@ -331,7 +422,7 @@ int main(void)
     int lm1_img_width, lm1_img_height, lm1_colorChannels;
     stbi_set_flip_vertically_on_load(true);
     unsigned char* lm1_tex_bytes = stbi_load(
-        "3D/ayaya.png", // Path to your texture image
+        "3D/Sandy.png", // Path to your texture image
         &lm1_img_width,
         &lm1_img_height,
         &lm1_colorChannels,
@@ -472,21 +563,13 @@ int main(void)
     stbi_image_free(ghost2_tex_bytes);
 
 
-
-
-
     
-
-    std::string facesSkybox[]{
-       "Skybox/morning_rt.png",
-       "Skybox/morning_lf.png",
-       "Skybox/morning_up.png",
-       "Skybox/morning_dn.png",
-       "Skybox/morning_ft.png",
-       "Skybox/morning_bk.png"
-    };
+    //std::string facesSkybox[6];
+    
+        
 
     unsigned int skyboxTex;
+    
     glGenTextures(1, &skyboxTex);
 
     glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxTex);
@@ -503,12 +586,8 @@ int main(void)
         int w, h, skyCChannel;
 
         stbi_set_flip_vertically_on_load(false);
-
-        unsigned char* data = stbi_load(facesSkybox[i].c_str(), &w, &h, &skyCChannel, 0);
-        if (!data) {
-            std::cerr << "Failed to load texture: " << facesSkybox[i] << std::endl;
-            continue;
-        }
+        unsigned char* data = stbi_load(facesSkyboxMorning[i].c_str(), &w, &h, &skyCChannel, 0);
+ 
 
 
         if (data) {
@@ -543,7 +622,7 @@ int main(void)
 	Shader ghost1Shader("Shaders/ghost1.vert", "Shaders/ghost1.frag");
 	Shader ghost2Shader("Shaders/ghost2.vert", "Shaders/ghost2.frag");
 	Shader planeShader("Shaders/plane.vert", "Shaders/plane.frag");
-    //Shader sphereShader("Shaders/sphere.vert", "Shaders/sphere.frag");
+  
 
     //compile shader vertex
     std::fstream vertSrc("Shaders/directionLight.vert");
@@ -670,12 +749,12 @@ int main(void)
     /////////////////////////////////////////////////////////////////////////////////////
 
     //set cursor to NONEXISTANT and make mouse events be called
-    //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    //glfwSetCursorPosCallback(window, mouse_callback);
+    
+    
 
  
     //std::string path = "3D/RedBellPepper.obj";
-    std::string path = "3D/F1.obj";
+    std::string path = "3D/Car8.obj";
     std::vector<tinyobj::shape_t> shapes;
     std::vector<tinyobj::material_t> material;
     std::string warning, error;
@@ -762,7 +841,7 @@ int main(void)
     }
 
  
-    std::string lm1_path = "3D/vending_mach.obj";
+    std::string lm1_path = "3D/Sandy.obj";
     std::vector<tinyobj::shape_t> lm1_shapes;
     std::vector<tinyobj::material_t> lm1_material;
 
@@ -1574,36 +1653,48 @@ int main(void)
     /*      Light Classes       */
     glm::vec3 lightDirection = { 4,-5,0 };
     DirectionLight directionLight(lightPos, lightColor, ambientStr, ambientColor, specStr, specPhong, lightDirection, dl_brightness);
-    PointLight pointLight(glm::vec3{ 0,1,0 }/*light_ball.getPosition()*/, lightColor, ambientStr, ambientColor, specStr, specPhong, brightness);
+    PointLight pointLight(player_car.getPosition() + glm::vec3{0.f,0.f, 100.f}, lightColor, ambientStr, ambientColor, specStr, specPhong, brightness);
+    PointLight pointLight2(ghost_car1.getPosition() + glm::vec3{ 0.f,0.f, 100.f }, lightColor, ambientStr, ambientColor, specStr, specPhong, brightness);
 	/*std::cout << "x: " << light_ball.getPosition(true).x << std::endl;
 	std::cout << "y: " << light_ball.getPosition(true).y << std::endl;
 	std::cout << "z: " << light_ball.getPosition(true).z << std::endl;*/
     ColorLight colorLight;
+    /*typedef std::chrono::steady_clock clock;
+    typedef std::chrono::time_point<clock> time_point;*/
+
+    
+    
+        //time_point start = clock::now()
+    stopwatch.start();
+	stopwatch2.start();
+	stopwatch3.start();
+    
 
     
     glEnable(GL_BLEND); //Rafael Ira R. Villanueva
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); //Rafael Ira R. Villanueva
-
+    
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
     {
         /* Render here */
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
-        perca.updateCameraPosition(main_object.getPosition());
+
+        
+        perca.updateCameraPosition(player_car.getPosition(), stateCam);
+		
         
         glm::mat4 viewMatrix;
-       //perca.updateCameraPosition(main_object.getPosition());
+       //perca.updateCameraPosition(player_car.getPosition());
 
         //set camera to be MOVEABLE i.e. can be influenced
-        if (stateCam) {
-            //set the camera to ortho
-            viewMatrix = glm::lookAt(orca.getCameraPos(), orca.getCameraPos() + orca.getFront(), orca.getWorldUp());
-        }
-        else {
+       
+        
+        
             //set the camera to perspective
-            viewMatrix = glm::lookAt(perca.getCameraPos(), perca.getCameraPos() + perca.getFront(), perca.getWorldUp());
-        }
+        viewMatrix = glm::lookAt(perca.getCameraPos(), perca.getCameraPos() + perca.getFront(), perca.getWorldUp());
+        
         //skybox
         glDepthMask(GL_FALSE);
         glDepthFunc(GL_LEQUAL);
@@ -1636,41 +1727,38 @@ int main(void)
         /*      MAIN OBJECT     */
         /*      TEXTURE OF MAIN OBJECT      */
         mainObjShader.use();
-        main_object.setTexture(&mainObjShader, &texture, "tex0");
+        player_car.setTexture(&mainObjShader, &texture, "tex0");
 
         //      DRAWING THE MAIN OBJ
 
         //std::cout << "x: " << light_ball.getPosition(true).x << std::endl;
 
-        pointLight.setPosition(glm::vec3{0,1,0}/*light_ball.getPosition(true)*/); //set the current position of the light sphere to the lightPos
-        //pointLight.setBrightness(brightness);
+        pointLight.setPosition(player_car.getPosition() + glm::vec3{ 0.f,0.4f,4.0 });
+        pointLight.setBrightness(brightness);
+		//pointLight2.setBrightness(brightness);
         directionLight.setBrightness(dl_brightness);
 
         //attaches the same values for direction and point light
         directionLight.attachFundamentals(&mainObjShader);
-        //pointLight.attachFundamentals(&mainObjShader);
+        pointLight.attachFundamentals(&mainObjShader);
 
         //attaches the specific values of each light
         directionLight.attachSpecifics(&mainObjShader);
-        //pointLight.attachSpecifics(&mainObjShader);
+        pointLight.attachSpecifics(&mainObjShader);
 
        
 
-        if (stateCam) {
-            //set the camera to ortho
-            main_object.setCamera(orca.getProjection(), orca.getCameraPos(), orca.getFront(), orca.getViewMat());
-        }
-        else {
+        
+
             //set the camera to perspective
-            main_object.setCamera(perca.getProjection(), perca.getCameraPos(), perca.getFront(), perca.getViewMat());
-            //perca.updateCameraPosition(main_object.getPosition());
-        }
+            player_car.setCamera(perca.getProjection(), perca.getCameraPos(), perca.getFront(), perca.getViewMat());
+            //perca.updateCameraPosition(player_car.getPosition());
+        
         
         //draw
-        main_object.mainDraw(&mainObjShader, &VAO, &fullVertexData);
+        player_car.mainDraw(&mainObjShader, &VAO, &fullVertexData);
         
-        
-        /*      SPHERE OBJECT       */
+ 
         
         lm1Shader.use();
 		landmark_1.setTexture(&lm1Shader, &lm1_texture, "texture1");
@@ -1679,29 +1767,22 @@ int main(void)
         glBindTexture(GL_TEXTURE_2D, lm1_texture);
         lm1Shader.setInt("tex0", 1); // Set the texture unit to 1
 
-        if (stateCam) {
-            //set the camera to ortho
-            landmark_1.setCamera(orca.getProjection(), orca.getCameraPos(), orca.getFront(), orca.getViewMat());
-        }
-        else {
+      
             //set the camera to perspective
-            landmark_1.setCamera(perca.getProjection(), perca.getCameraPos(), perca.getFront(), perca.getViewMat());
-        }
-
-        //pointLight.setPosition(glm::vec3{ 0,1,0 }/*light_ball.getPosition(true)*/); //set the current position of the light sphere to the lightPos
-        //pointLight.setBrightness(brightness);
+        landmark_1.setCamera(perca.getProjection(), perca.getCameraPos(), perca.getFront(), perca.getViewMat());
+        
+        pointLight.setPosition(player_car.getPosition() + glm::vec3{ 0.f,0.4f,4.0 });
         directionLight.setBrightness(dl_brightness);
 
         //attaches the same values for direction and point light
         directionLight.attachFundamentals(&lm1Shader);
-       // pointLight.attachFundamentals(&lm1Shader);
+        pointLight.attachFundamentals(&lm1Shader);
 
         //attaches the specific values of each light
         directionLight.attachSpecifics(&lm1Shader);
-        //pointLight.attachSpecifics(&lm1Shader);
+        pointLight.attachSpecifics(&lm1Shader);
         
-        //colorLight.setColor(sphere_color); //change the color
-        //colorLight.perform(&sphereShader); //attaches the values of light into the shader program of sphere
+        
         landmark_1.mainDraw(&lm1Shader, &lm1_VAO, &lm1_fullVertexData);
 
 
@@ -1715,26 +1796,23 @@ int main(void)
 		glBindTexture(GL_TEXTURE_2D, lm2_texture);
 		lm2Shader.setInt("tex0", 2); // Set the texture unit to 1
 
-        if (stateCam) {
-            //set the camera to ortho
-            landmark_2.setCamera(orca.getProjection(), orca.getCameraPos(), orca.getFront(), orca.getViewMat());
-        }
-        else {
+       
+        
             //set the camera to perspective
             landmark_2.setCamera(perca.getProjection(), perca.getCameraPos(), perca.getFront(), perca.getViewMat());
-        }
-
-        //pointLight.setPosition(glm::vec3{ 0,1,0 }/*light_ball.getPosition(true)*/); //set the current position of the light sphere to the lightPos
+      
+        pointLight.setPosition(player_car.getPosition() + glm::vec3{ 0.f,0.4f,4.0 });
+            //pointLight.setPosition(glm::vec3{ 0,1,0 }/*light_ball.getPosition(true)*/); //set the current position of the light sphere to the lightPos
        // pointLight.setBrightness(brightness);
         directionLight.setBrightness(dl_brightness);
 
         //attaches the same values for direction and point light
         directionLight.attachFundamentals(&lm2Shader);
-       // pointLight.attachFundamentals(&lm2Shader);
+        pointLight.attachFundamentals(&lm2Shader);
 
         //attaches the specific values of each light
         directionLight.attachSpecifics(&lm2Shader);
-       // pointLight.attachSpecifics(&lm2Shader);
+        pointLight.attachSpecifics(&lm2Shader);
 
         //colorLight.setColor(sphere_color); //change the color
         //colorLight.perform(&sphereShader); //attaches the values of light into the shader program of sphere
@@ -1747,29 +1825,23 @@ int main(void)
 		glActiveTexture(GL_TEXTURE3);
 		glBindTexture(GL_TEXTURE_2D, ghost1_texture);
 		ghost1Shader.setInt("tex0", 3); // Set the texture unit to 1
-        //if (stateCam) {
-        //    //set the camera to ortho
-        //    ghost_car1.setCamera(orca.getProjection(), orca.getCameraPos(), orca.getFront(), orca.getViewMat());
-        //}
-        //else {
-            //set the camera to perspective
-            ghost_car1.setCamera(perca.getProjection(), perca.getCameraPos(), perca.getFront(), perca.getViewMat());
-        //}
+     
+        ghost_car1.setCamera(perca.getProjection(), perca.getCameraPos(), perca.getFront(), perca.getViewMat());
+     
+        pointLight.setPosition(player_car.getPosition() + glm::vec3{ 0.f,0.4f,4.0 });
 
-        //pointLight.setPosition(glm::vec3{ 0,1,0 }/*light_ball.getPosition(true)*/); //set the current position of the light sphere to the lightPos
-       // pointLight.setBrightness(brightness);
         directionLight.setBrightness(dl_brightness);
 
         //attaches the same values for direction and point light
         directionLight.attachFundamentals(&ghost1Shader);
-        // pointLight.attachFundamentals(&lm2Shader);
+        pointLight.attachFundamentals(&ghost1Shader);
 
          //attaches the specific values of each light
         directionLight.attachSpecifics(&ghost1Shader);
-        // pointLight.attachSpecifics(&lm2Shader);
+        pointLight.attachSpecifics(&ghost1Shader);
 
          //colorLight.setColor(sphere_color); //change the color
-         //colorLight.perform(&sphereShader); //attaches the values of light into the shader program of sphere
+         colorLight.perform(&ghost1Shader); //attaches the values of light into the shader program of sphere
         ghost_car1.mainDraw(&ghost1Shader, &ghost1_VAO, &ghost1_fullVertexData);
 
 		
@@ -1783,29 +1855,28 @@ int main(void)
 		glActiveTexture(GL_TEXTURE4);
 		glBindTexture(GL_TEXTURE_2D, plane_texture);
 		planeShader.setInt("tex0", 4); // Set the texture unit to 1
-        if (stateCam) {
-            //set the camera to ortho
-            plane_road.setCamera(orca.getProjection(), orca.getCameraPos(), orca.getFront(), orca.getViewMat());
-        }
-        else {
+        
+       
             //set the camera to perspective
             plane_road.setCamera(perca.getProjection(), perca.getCameraPos(), perca.getFront(), perca.getViewMat());
-        }
+        
 
-        //pointLight.setPosition(glm::vec3{ 0,1,0 }/*light_ball.getPosition(true)*/); //set the current position of the light sphere to the lightPos
-       // pointLight.setBrightness(brightness);
-        directionLight.setBrightness(dl_brightness);
+            pointLight.setPosition(player_car.getPosition() + glm::vec3{ 0.f,0.4f,4.0 });
+           //pointLight2.setPosition(ghost_car1.getPosition() + glm::vec3{ 0.f,1.f,5.0 });
+
 
         //attaches the same values for direction and point light
         directionLight.attachFundamentals(&planeShader);
-        // pointLight.attachFundamentals(&lm2Shader);
+        pointLight.attachFundamentals(&planeShader);
+        //pointLight2.attachFundamentals(&planeShader);
 
          //attaches the specific values of each light
         directionLight.attachSpecifics(&planeShader);
-        // pointLight.attachSpecifics(&lm2Shader);
+        pointLight.attachSpecifics(&planeShader);
+        //pointLight2.attachSpecifics(&planeShader);
 
          //colorLight.setColor(sphere_color); //change the color
-         //colorLight.perform(&sphereShader); //attaches the values of light into the shader program of sphere
+        //colorLight.perform(&planeShader); //attaches the values of light into the shader program of sphere
         plane_road.mainDraw(&planeShader, &plane_VAO, &plane_fullVertexData);
            
 
@@ -1824,22 +1895,75 @@ int main(void)
             //set the camera to perspective
         ghost_car2.setCamera(perca.getProjection(), perca.getCameraPos(), perca.getFront(), perca.getViewMat());
         //}
-
-        //pointLight.setPosition(glm::vec3{ 0,1,0 }/*light_ball.getPosition(true)*/); //set the current position of the light sphere to the lightPos
-       // pointLight.setBrightness(brightness);
+        pointLight.setPosition(player_car.getPosition() + glm::vec3{ 0.f,0.4f,4.0 });
+   
         directionLight.setBrightness(dl_brightness);
 
         //attaches the same values for direction and point light
         directionLight.attachFundamentals(&ghost2Shader);
-        // pointLight.attachFundamentals(&lm2Shader);
+        pointLight.attachFundamentals(&ghost2Shader);
 
          //attaches the specific values of each light
         directionLight.attachSpecifics(&ghost2Shader);
-        // pointLight.attachSpecifics(&lm2Shader);
+        pointLight.attachSpecifics(&ghost2Shader);
 
          //colorLight.setColor(sphere_color); //change the color
          //colorLight.perform(&sphereShader); //attaches the values of light into the shader program of sphere
         ghost_car2.mainDraw(&ghost2Shader, &ghost2_VAO, &ghost2_fullVertexData);
+        
+        //stopping conditions for finish line
+
+        if (stateGhost == true) {
+            if (ghostSpeed1 < 1.5)
+            {
+                ghostSpeed1 += 0.000005;
+            }
+            ghost_car1.translate(glm::vec3{ 0,0,1 } *ghostSpeed1);
+
+
+            if (ghostSpeed2 < 0.7)
+            {
+                ghostSpeed2 += 0.0000005;
+            }
+			ghost_car2.translate(glm::vec3{ 0,0,1 } *ghostSpeed2);
+        }
+
+         if (stateGhost == false) {
+            ghostSpeed1 = 0.0f;
+            ghost_car1.translate(glm::vec3{ 0,0,0 } *ghostSpeed1);
+			ghostSpeed2 = 0.0f;
+			ghost_car2.translate(glm::vec3{ 0,0,0 } *ghostSpeed2);
+            
+
+         }
+
+         if (ghost_car1.getPosition().z >= FINISH_LINE) {
+             ghostSpeed1 = 0.0f;
+             ghost_car1.translate(glm::vec3{ 0,0,0 } *ghostSpeed1);
+			 finishState3 = true;
+             stopwatch2.stop();
+
+
+         }
+		 if (ghost_car2.getPosition().z >= FINISH_LINE) {
+			 ghostSpeed2 = 0.0f;
+			 ghost_car2.translate(glm::vec3{ 0,0,0 } *ghostSpeed2);
+			 finishState2 = true;
+             stopwatch3.stop();
+		 }
+
+		 if (player_car.getPosition().z >= FINISH_LINE) {
+			 carSpeed = 0.0f;
+			 player_car.translate(glm::vec3{ 0,0,0 } * carSpeed);
+			 finishState = true;
+             stopwatch.stop();
+		 }
+
+		 if (finishState == true && finishState2 == true && finishState3 == true) {
+			 
+             std::cout << "GAME OVER\n" << std::endl;
+             glfwSetWindowShouldClose(window, true);
+		 }
 
 
 
@@ -1851,8 +1975,19 @@ int main(void)
         
 
     }
+    
+    //stopwatch.stop();
+    std::cout << "Player time: " << stopwatch.elapsedSeconds() << " seconds\n" << std::endl;
+    std::cout << "Ghost 1 time: " << stopwatch2.elapsedSeconds() << " seconds\n" << std::endl;
+    std::cout << "Ghost 2 time: " << stopwatch3.elapsedSeconds() << " seconds\n" << std::endl;
+    //std::chrono::milliseconds elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+
+   
+
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
+
+    
    /* glDeleteBuffers(1, &EBO);*/
     glfwTerminate();
     return 0;
