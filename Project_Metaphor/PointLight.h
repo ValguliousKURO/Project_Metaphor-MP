@@ -14,22 +14,10 @@ private:
 	float brightness;
 
 public:
-	PointLight(
-		glm::vec3 lightPos,
-		glm::vec3 lightColor,
-		float ambientStr,
-		glm::vec3 ambientColor,
-		float specStr,
-		float specPhong,
-		float brightness
-	);
-
-public:
 	void perform(GLuint* shaderProg);
 	void attachSpecifics(Shader* shaderProg);
-
-public:
 	void setPosition(glm::vec3 position);
 	void setBrightness(float brightness);
-	
+	PointLight(glm::vec3 lightPos, glm::vec3 lightColor, float ambientStr, glm::vec3 ambientColor,
+		       float specStr, float specPhong, float brightness);
 };

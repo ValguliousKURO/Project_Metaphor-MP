@@ -9,7 +9,5 @@ private:
 public:
 	PerspectiveCamera(glm::vec3 pos,float height, float width);
 	void updateCameraPosition(const glm::vec3& carPosition, bool stateCam);
-
 	glm::mat4 getProjection();
-	
 };

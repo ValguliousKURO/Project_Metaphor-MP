@@ -15,7 +15,7 @@
 
 class Player {
 private:
-	//transformation
+	//Transformation Variables
 	glm::vec3 position;
 	glm::vec3 rotation;
 	glm::vec3 scale;
@@ -25,7 +25,7 @@ private:
 
 	glm::mat4 identity_matrix4;
 
-	//camera
+	//Camera Variables
 	glm::mat4 projection;
 	glm::vec3 cameraPos;
 	glm::vec3 WorldUp;
@@ -35,24 +35,18 @@ private:
 public:
 	Player(glm::vec3 position);
 
-public:
 	void draw(GLuint* shaderProg, GLuint* VAO, std::vector<GLfloat>* fullVertexData);
 	void mainDraw(Shader* shaderProg, GLuint* VAO, std::vector<GLfloat>* fullVertexData);
-	void sphereDraw(Shader* shaderProg, GLuint* VAO, std::vector<GLfloat>* fullVertexData);
 	void rotate(char axis, int direction);
-	glm::mat4 sphereTrans();
 	glm::mat4 mainTrans();
 	void translate(glm::vec3 newPos);
 
-public:
 	void setCamera(glm::mat4 projection, glm::vec3 cameraPos, glm::vec3 Front, glm::mat4 viewMatrix);
 	void setTexture(Shader* shaderProg, GLuint* texture, const std::string& name);
 	void setPosition(glm::vec3 newPos);
 	void setScale(glm::vec3 newScale);
 	void setRotation(float rotX, float rotY, float rotZ);
 
-
-public:
 	glm::vec3 getPosition();
 	glm::vec3 getPosition(bool fromMatrix);
 };

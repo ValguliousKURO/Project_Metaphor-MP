@@ -146,7 +146,6 @@
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Model3D.cpp" />
-    <ClCompile Include="OrthoCamera.cpp" />
     <ClCompile Include="PerspectiveCamera.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="PointLight.cpp" />
@@ -155,11 +154,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
-    <ClInclude Include="ColorLight.hpp" />
+    <ClInclude Include="ColorLight.h" />
     <ClInclude Include="DirectionLight.h" />
     <ClInclude Include="Light.h" />
     <ClInclude Include="Model3D.h" />
-    <ClInclude Include="OrthoCamera.h" />
     <ClInclude Include="PerspectiveCamera.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="PointLight.h" />

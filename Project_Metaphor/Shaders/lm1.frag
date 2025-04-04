@@ -3,31 +3,23 @@
 uniform sampler2D tex0;
 
 uniform vec3 lightPos;
-
 uniform vec3 lightColor;
 
 uniform float ambientStr;
-
 uniform vec3 ambientColor;
 
 uniform vec3 cameraPos;
-
 uniform float specStr;
-
 uniform float specPhong;
-
 uniform vec3 direction;
 
 uniform float brightness;
-
 uniform float dl_brightness;
 
 out vec4 FragColor;
 
 in vec2 texCoord;
-
 in vec3 normCoord;
-
 in vec3 fragPos;
 
 vec3 CalcDirLight(vec3 normal, vec3 viewDir);
@@ -52,7 +44,8 @@ void main()
 }
 
 
-vec3 CalcDirLight(vec3 normal, vec3 viewDir){
+vec3 CalcDirLight(vec3 normal, vec3 viewDir)
+{
 
 	vec3 lightDir = normalize(-direction);
 
@@ -69,8 +62,8 @@ vec3 CalcDirLight(vec3 normal, vec3 viewDir){
 	return (ambient + diffuse + specular) * dl_brightness;
 }
 
-vec3 CalcPointLight(vec3 normal, vec3 viewDir){
-
+vec3 CalcPointLight(vec3 normal, vec3 viewDir)
+{
 	vec3 lightDir = normalize(lightPos - fragPos);
 
 	float diff = max(dot(normal, lightDir), 0.0);
@@ -94,5 +87,4 @@ vec3 CalcPointLight(vec3 normal, vec3 viewDir){
 	specular *= attenuation;
 
 	return (ambient + diffuse + specular);
-
 }

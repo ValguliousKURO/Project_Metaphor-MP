@@ -18,7 +18,6 @@ public:
 
 	void perform(Shader* shaderProg);
 
-public:
 	void setColor(float red, float green, float blue);
 	void setColor(glm::vec3 rgb);
 };

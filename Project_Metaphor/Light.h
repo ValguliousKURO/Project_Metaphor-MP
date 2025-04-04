@@ -10,7 +10,6 @@
 
 class Light {
 protected:
-	//Light variables
 	glm::vec3 lightPos;
 	glm::vec3 lightColor;
 	float ambientStr;
@@ -19,15 +18,8 @@ protected:
 	float specPhong;
 
 public:
-	Light(
-		glm::vec3 lightPos,
-		glm::vec3 lightColor,
-		float ambientStr,
-		float specStr,
-		float specPhong
-	);
-
-public:
 	void attachFundamentals(Shader* shaderProg);
 	virtual void attachSpecifics(Shader* shaderProg) = 0;
+	Light(glm::vec3 lightPos, glm::vec3 lightColor, float ambientStr,
+		float specStr, float specPhong);
 };

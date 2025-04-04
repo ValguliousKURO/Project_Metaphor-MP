@@ -3,31 +3,23 @@
 uniform sampler2D tex0;
 
 uniform vec3 lightPos;
-
 uniform vec3 lightColor;
 
 uniform float ambientStr;
-
 uniform vec3 ambientColor;
-
 uniform vec3 cameraPos;
 
 uniform float specStr;
-
 uniform float specPhong;
-
 uniform vec3 direction;
 
 uniform float brightness;
-
 uniform float dl_brightness;
 
 out vec4 FragColor;
 
 in vec2 texCoord;
-
 in vec3 normCoord;
-
 in vec3 fragPos;
 
 vec3 CalcDirLight(vec3 normal, vec3 viewDir);
@@ -35,12 +27,12 @@ vec3 CalcPointLight(vec3 normal, vec3 viewDir);
 
 void main()
 {
-	vec4 pixelColor = texture(tex0, texCoord); //Rafael Ira R. Villanueva
+	vec4 pixelColor = texture(tex0, texCoord); 
 	
-	if (pixelColor.a < 0.1)  //Rafael Ira R. Villanueva
-	{						 //Rafael Ira R. Villanueva
-		discard;             //Rafael Ira R. Villanueva
-	}                        //Rafael Ira R. Villanueva
+	if (pixelColor.a < 0.1)  
+	{						 
+		discard;             
+	}                        
 
 	vec3 result;
 

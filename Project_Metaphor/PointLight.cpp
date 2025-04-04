@@ -1,7 +1,8 @@
 #include "PointLight.h"
 
-PointLight::PointLight(glm::vec3 lightPos, glm::vec3 lightColor, float ambientStr, glm::vec3 ambientColor, float specStr, float specPhong, float brightness) :
-Light(lightPos,lightColor, ambientStr, specStr, specPhong)
+PointLight::PointLight(glm::vec3 lightPos, glm::vec3 lightColor, float ambientStr, glm::vec3 ambientColor, 
+                       float specStr, float specPhong, float brightness) :
+                       Light(lightPos,lightColor, ambientStr, specStr, specPhong)
 {
 	this->brightness = brightness;
 }
@@ -9,24 +10,16 @@ Light(lightPos,lightColor, ambientStr, specStr, specPhong)
 void PointLight::perform(GLuint* shaderProg)
 {
     GLuint lightLoc = glGetUniformLocation(*shaderProg, "lightPos");
-        glUniform3fv(lightLoc,
-            1,
-            glm::value_ptr(lightPos));
+    glUniform3fv(lightLoc, 1, glm::value_ptr(lightPos));
 
     GLuint lightColorLoc = glGetUniformLocation(*shaderProg, "lightColor");
-    glUniform3fv(lightColorLoc,
-        1,
-        glm::value_ptr(lightColor));
-
+    glUniform3fv(lightColorLoc, 1, glm::value_ptr(lightColor));
 
     GLuint ambientStrLoc = glGetUniformLocation(*shaderProg, "ambientStr");
     glUniform1f(lightColorLoc, ambientStr);
 
     GLuint ambientColorLoc = glGetUniformLocation(*shaderProg, "ambientColor");
-
-    glUniform3fv(lightColorLoc,
-        1,
-        glm::value_ptr(ambientColor));
+    glUniform3fv(lightColorLoc, 1, glm::value_ptr(ambientColor));
 
     GLuint specStrLoc = glGetUniformLocation(*shaderProg, "specStr");
     glUniform1f(specStrLoc, specStr);
@@ -38,7 +31,6 @@ void PointLight::perform(GLuint* shaderProg)
     glUniform1f(brightnessLoc, brightness);
 }
 
-//attach the specific values needed for point light
 void PointLight::attachSpecifics(Shader* shaderProg)
 {
     shaderProg->setFloat("brightness", brightness);

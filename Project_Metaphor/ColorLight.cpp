@@ -1,4 +1,4 @@
-#include "ColorLight.hpp"
+#include "ColorLight.h"
 
 ColorLight::ColorLight()
 {
@@ -7,7 +7,6 @@ ColorLight::ColorLight()
 	this->green = 1.0f;
 }
 
-//this allows to pass the values of rgb to the shader program
 void ColorLight::perform(Shader* shaderProg)
 {
 	shaderProg->setFloat("red", this->red);

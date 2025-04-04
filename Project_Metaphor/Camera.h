@@ -7,8 +7,6 @@
 
 class Camera {
 protected:
-	
-	//glm::mat4 projection;
 	glm::vec3 cameraPos;
 	glm::vec3 WorldUp;
 	glm::vec3 Front;
@@ -16,7 +14,6 @@ protected:
 
 public:
 	Camera(glm::vec3 pos);
-public:
 
 	void setCameraPos(glm::vec3 camPos);
 	void setFront(glm::vec3 Front);
@@ -24,5 +21,4 @@ public:
 	glm::vec3 getWorldUp();
 	glm::mat4 getViewMat();
 	glm::vec3 getCameraPos();
-
 };
