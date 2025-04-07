@@ -161,9 +161,9 @@ void Key_Callback(GLFWwindow* window, int key, int scancode, int action,int mods
 
             else if (carSpeed < 1)
             {
-                carSpeed += 0.005;
+                carSpeed += 0.05;
             }
-            std::cout << "Speed: " << carSpeed << std::endl;
+            //std::cout << "Speed: " << carSpeed << std::endl;
             player_car.translate(glm::vec3{ 0,0,1 } *carSpeed);
 		}
 
@@ -1581,11 +1581,12 @@ int main(void)
             ghost_car1.translate(glm::vec3{ 0,0,1 } *ghostSpeed1);
 
 
-            if (ghostSpeed2 < 0.7)
+            if (ghostSpeed2 < 0.7f)
             {
                 ghostSpeed2 += 0.0000005;
+				//std::cout << ghostSpeed2 << std::endl;
             }
-			ghost_car2.translate(glm::vec3{ 0,0,1 } *ghostSpeed2);
+			ghost_car2.translate(glm::vec3{ 0,0,0.2f } *ghostSpeed2);
         }
 
         if (stateGhost == false) 
@@ -1599,7 +1600,7 @@ int main(void)
         if (ghost_car1.getPosition().z >= FINISH_LINE) 
         {
              ghostSpeed1 = 0.0f;
-             ghost_car1.translate(glm::vec3{ 0,0,0 } *ghostSpeed1);
+             ghost_car1.translate(glm::vec3{ 0,0,0 } * ghostSpeed1);
 			 finishState3 = true;
              stopwatch2.stop();
         }
@@ -1607,7 +1608,7 @@ int main(void)
 		if (ghost_car2.getPosition().z >= FINISH_LINE) 
         {
 			 ghostSpeed2 = 0.0f;
-			 ghost_car2.translate(glm::vec3{ 0,0,0 } *ghostSpeed2);
+			 ghost_car2.translate(glm::vec3{ 0,0,0 } * ghostSpeed2);
 			 finishState2 = true;
              stopwatch3.stop();
 		}
